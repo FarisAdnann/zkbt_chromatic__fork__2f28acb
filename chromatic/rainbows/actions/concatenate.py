@@ -42,23 +42,46 @@ def concatenate_in_time(self, other, maximum_fractional_difference=0.01):
 
     # loop through wavelengths
     for k in self.wavelike:
-        f = fractional_difference(self.wavelike[k], other.wavelike[k])
-        if np.any(f > maximum_fractional_difference):
-            cheerfully_suggest(
-                f"""
-            wavelike['{k}'] differs fractionally by a maximum of {np.max(f):.3g}
-            between `self` and `other` ({np.sum(f > maximum_fractional_difference)} differences greater than {maximum_fractional_difference:.3g}).
-            `self` values will be used; `other` values will be ignored.
-            """
-            )
+        if k in other.wavelike:
+            f = fractional_difference(self.wavelike[k], other.wavelike[k])
+            if np.any(f > maximum_fractional_difference):
+                cheerfully_suggest(
+                    f"""
+                wavelike['{k}'] differs fractionally by a maximum of {np.max(f):.3g}
+                between `self` and `other` ({np.sum(f > maximum_fractional_difference)} differences greater than {maximum_fractional_difference:.3g}).
+                `self` values will be used; `other` values will be ignored.
+                """
+                )
+        else:
+            cheerfully_suggest(f"wavelike['{k}'] not found in `other` rainbow; ignoring.")
 
     # loop through timelike quantities
     for k in self.timelike:
-        new.timelike[k] = np.hstack([self.timelike[k], other.timelike[k]])
+        if k in other.timelike:
+            new.timelike[k] = np.hstack([self.timelike[k], other.timelike[k]])
+        else:
+            cheerfully_suggest(
+                f"timelike['{k}'] not found in `other` rainbow; filling with NaNs."
+            )
+            # create an array of NaNs for the missing data
+            shape_of_missing = list(self.timelike[k].shape)
+            shape_of_missing[0] = other.ntime
+            missing_data = np.full(shape_of_missing, np.nan)
+            new.timelike[k] = np.hstack([self.timelike[k], missing_data])
 
     # loop through fluxlike quantities
     for k in self.fluxlike:
-        new.fluxlike[k] = np.hstack([self.fluxlike[k], other.fluxlike[k]])
+        if k in other.fluxlike:
+            new.fluxlike[k] = np.hstack([self.fluxlike[k], other.fluxlike[k]])
+        else:
+            cheerfully_suggest(
+                f"fluxlike['{k}'] not found in `other` rainbow; filling with NaNs."
+            )
+            # create an array of NaNs for the missing data
+            shape_of_missing = list(self.fluxlike[k].shape)
+            shape_of_missing[0] = other.ntime
+            missing_data = np.full(shape_of_missing, np.nan)
+            new.fluxlike[k] = np.hstack([self.fluxlike[k], missing_data])
 
     # append the history entry to the new Rainbow
     new._record_history_entry(h)
@@ -94,23 +117,46 @@ def concatenate_in_wavelength(self, other, maximum_fractional_difference=0.01):
 
     # loop through times
     for k in self.timelike:
-        f = fractional_difference(self.timelike[k], other.timelike[k])
-        if np.any(f > maximum_fractional_difference):
-            cheerfully_suggest(
-                f"""
-            timelike['{k}'] differs fractionally by a maximum of {np.max(f):.3g}
-            between `self` and `other` ({np.sum(f > maximum_fractional_difference)} differences greater than {maximum_fractional_difference:.3g}).
-            `self` values will be used; `other` values will be ignored.
-            """
-            )
+        if k in other.timelike:
+            f = fractional_difference(self.timelike[k], other.timelike[k])
+            if np.any(f > maximum_fractional_difference):
+                cheerfully_suggest(
+                    f"""
+                timelike['{k}'] differs fractionally by a maximum of {np.max(f):.3g}
+                between `self` and `other` ({np.sum(f > maximum_fractional_difference)} differences greater than {maximum_fractional_difference:.3g}).
+                `self` values will be used; `other` values will be ignored.
+                """
+                    )
+        else:
+            cheerfully_suggest(f"timelike['{k}'] not found in `other` rainbow; ignoring.")
 
     # loop through wavelike quantities
     for k in self.wavelike:
-        new.wavelike[k] = np.hstack([self.wavelike[k], other.wavelike[k]])
+        if k in other.wavelike:
+            new.wavelike[k] = np.hstack([self.wavelike[k], other.wavelike[k]])
+        else:
+            cheerfully_suggest(
+                f"wavelike['{k}'] not found in `other` rainbow; filling with NaNs."
+            )
+            # create an array of NaNs for the missing data
+            shape_of_missing = list(self.wavelike[k].shape)
+            shape_of_missing[-1] = other.nwave
+            missing_data = np.full(shape_of_missing, np.nan)
+            new.wavelike[k] = np.hstack([self.wavelike[k], missing_data])
 
     # loop through fluxlike quantities
     for k in self.fluxlike:
-        new.fluxlike[k] = np.hstack([self.fluxlike[k], other.fluxlike[k]])
+        if k in other.fluxlike:
+            new.fluxlike[k] = np.hstack([self.fluxlike[k], other.fluxlike[k]])
+        else:
+            cheerfully_suggest(
+                f"fluxlike['{k}'] not found in `other` rainbow; filling with NaNs."
+            )
+            # create an array of NaNs for the missing data
+            shape_of_missing = list(self.fluxlike[k].shape)
+            shape_of_missing[-1] = other.nwave
+            missing_data = np.full(shape_of_missing, np.nan)
+            new.fluxlike[k] = np.hstack([self.fluxlike[k], missing_data])
 
     # append the history entry to the new Rainbow
     new._record_history_entry(h)
